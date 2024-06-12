@@ -1,0 +1,3 @@
+[submodule "circular_selector_example"]
+	path = circular_selector_example
+	url = https://github.com/MatricalDefunkt/circular_selector_example
