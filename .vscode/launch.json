@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Example",
+      "type": "dart",
+      "request": "launch",
+      "args": ["-d", "f42dd9ce"],
+      "program": "/home/matdef/projects/circular_selector/circular_selector_example/lib/main.dart"
+    },
+    {
+      "name": "Run Example Linux",
+      "type": "dart",
+      "request": "launch",
+      "args": ["-d", "linux"],
+      "program": "/home/matdef/projects/circular_selector/circular_selector_example/lib/main.dart"
+    }
+  ]
+}
