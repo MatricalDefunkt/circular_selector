@@ -35,3 +35,7 @@ build/
 /windows
 /linux
 /macos
+
+# VSCode
+.vscode/*
+!.vscode/launch.json
