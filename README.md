@@ -11,30 +11,52 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages).
 -->
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+A dial like selector for a new way of selecting values.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+1. Modular: The dial has children which you will be able to define.
+2. Animated: The dial is animated robustly.
+3. Selecting values: The API provides a way to give a callback function for ease of use.
+4. Ease of Access: There are 2 ways of interacting with the dial, by dragging or by tapping.
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+In the `pubspec.yaml` of your flutter project, add the following dependency:
 
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
-```dart
-
-const like = 'sample';
+```yaml
+dependencies:
+  circular_selector: ^0.0.1
 ```
 
-## Additional information
+In your library add the following import:
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+```dart
+import 'package:circular_selector/circular_selector.dart';
+```
+
+That's it, now you can use the CircularSelector widget!
+
+## Usage
+You can refer to a simple example below:
+
+```dart
+CircularSelector(
+    onSelected: (int index) {
+        print('Selected: $index');
+    },
+    childSize: 30.0,
+    radiusDividend: 2.5,
+    customOffset: Offset(
+        0.0,
+        AppBar().preferredSize.height,
+    ),
+    children: CircularSelector.getTestContainers(20, 30.0),
+)
+```
+
+For an executable example, refer to the `example` folder.
+
+# CONTRIBUTING
+
+If you would like to contribute to the package, please refer to the [CONTRIBUTING.md](
