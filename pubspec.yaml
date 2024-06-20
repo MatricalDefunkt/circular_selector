@@ -1,6 +1,6 @@
 name: circular_selector
 description: A widget which provides a new way of selecting values
-version: 0.0.1
+version: 0.0.2
 repository: "https://github.com/MatricalDefunkt/circular_selector"
 
 environment:
