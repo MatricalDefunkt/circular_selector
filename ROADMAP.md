@@ -9,9 +9,13 @@
 
 # 0.0.3
 
+- Fixed roadmap, changelog, and readme files.
+
+# 0.0.4
+
 - Aim to add concentricity to the widget, i.e. the ability to have multiple circles in the widget.
 - Fix the positioning of the widget in the android app.
 
-# 0.0.3
+# 0.0.5
 
 - Aim to add more modularity and customizability and remove testing elements.
