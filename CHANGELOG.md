@@ -9,3 +9,5 @@
 * Added an example as a directory in the project.
 
 ## 0.0.3
+
+* Fixed roadmap, changelog, and readme files.
