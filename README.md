@@ -46,4 +46,4 @@ For an executable example, refer to the `example` folder.
 
 # CONTRIBUTING
 
-If you would like to contribute to the package, please refer to the [CONTRIBUTING.md](
+If you would like to contribute to the package, please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file.

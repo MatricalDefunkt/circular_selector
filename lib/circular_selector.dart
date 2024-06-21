@@ -29,6 +29,9 @@ class CircularSelector extends StatefulWidget {
   /// A custom offset defined from the top left for the circle.
   final Offset customOffset;
 
+  /// Returns a list of circular containers for testing purposes.
+  ///
+  /// The number of containers is defined by the [num] parameter.
   static List<Container> getTestContainers(int num, double childSize) {
     List<Container> containers = [];
     for (int i = 0; i < num; i++) {
@@ -50,14 +53,6 @@ class CircularSelector extends StatefulWidget {
     return containers;
   }
 
-  static double calculateGestureAngle(
-      double dx, double dy, double xOrigin, double yOrigin) {
-    double angle = atan2(dy - yOrigin, dx - xOrigin) * 180 / pi;
-    angle = angle < 0 ? 360 + angle : angle;
-    angle = (angle + 90) % 360; // Adjusting the origin to 12 o'clock
-    return angle;
-  }
-
   @override
   // ignore: library_private_types_in_public_api
   _CircularSelectorState createState() => _CircularSelectorState();
@@ -69,7 +64,15 @@ class _CircularSelectorState extends State<CircularSelector>
   late AnimationController _controller;
   late Animation<double> _animation;
   late double startRotation;
-  late Offset deviceSize;
+  late Offset parentDimensions;
+
+  static double calculateGestureAngle(
+      double dx, double dy, double xOrigin, double yOrigin) {
+    double angle = atan2(dy - yOrigin, dx - xOrigin) * 180 / pi;
+    angle = angle < 0 ? 360 + angle : angle;
+    angle = (angle + 90) % 360; // Adjusting the origin to 12 o'clock
+    return angle;
+  }
 
   @override
   void initState() {
@@ -97,8 +100,7 @@ class _CircularSelectorState extends State<CircularSelector>
 
   int getTappedChildIndex(
       double dx, double dy, double xOrigin, double yOrigin) {
-    final angleDeg =
-        CircularSelector.calculateGestureAngle(dx, dy, xOrigin, yOrigin);
+    final angleDeg = calculateGestureAngle(dx, dy, xOrigin, yOrigin);
     final anglePerChild = 360 / widget.children.length;
 
     // Adjust angle to account for current rotation
@@ -142,10 +144,10 @@ class _CircularSelectorState extends State<CircularSelector>
 
     targetRotation = currentRotationMod - rotationDiff;
 
+    final rotationDiffDeg = (rotationDiff * 180 / pi).abs().round();
+
     // Dynamic Duration Calculation
-    const double angularVelocity = 1.5; // Radians per second
-    final duration = Duration(
-        milliseconds: (rotationDiff.abs() / angularVelocity * 300).round());
+    final duration = Duration(milliseconds: rotationDiffDeg * 2);
 
     _controller.duration = duration;
 
@@ -172,11 +174,10 @@ class _CircularSelectorState extends State<CircularSelector>
     final dx = details.localPosition.dx;
     final dy = details.localPosition.dy;
 
-    final xOrigin = deviceSize.dx / 2;
-    final yOrigin = deviceSize.dy / 2;
+    final xOrigin = parentDimensions.dx / 2;
+    final yOrigin = parentDimensions.dy / 2;
 
-    startRotation =
-        CircularSelector.calculateGestureAngle(dx, dy, xOrigin, yOrigin);
+    startRotation = calculateGestureAngle(dx, dy, xOrigin, yOrigin);
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
@@ -187,11 +188,10 @@ class _CircularSelectorState extends State<CircularSelector>
       return;
     }
 
-    final xOrigin = deviceSize.dx / 2;
-    final yOrigin = deviceSize.dy / 2;
+    final xOrigin = parentDimensions.dx / 2;
+    final yOrigin = parentDimensions.dy / 2;
 
-    final angle =
-        CircularSelector.calculateGestureAngle(dx, dy, xOrigin, yOrigin);
+    final angle = calculateGestureAngle(dx, dy, xOrigin, yOrigin);
 
     final angleDiff = angle - startRotation;
 
@@ -224,16 +224,16 @@ class _CircularSelectorState extends State<CircularSelector>
 
   @override
   Widget build(BuildContext context) {
-    final deviceWidth = MediaQuery.of(context).size.width;
-    final deviceHeight =
+    final parentWidth = MediaQuery.of(context).size.width;
+    final parentHeight =
         MediaQuery.of(context).size.height - AppBar().preferredSize.height;
-    deviceSize = Offset(deviceWidth, deviceHeight);
+    parentDimensions = Offset(parentWidth, parentHeight);
 
     Point getPosition(int index, double childSize, double? xOrigin,
         double? yOrigin, double? radius) {
-      xOrigin ??= deviceWidth / 2;
-      yOrigin ??= deviceHeight / 2;
-      radius ??= min(deviceWidth, deviceHeight) / widget.radiusDividend;
+      xOrigin ??= (parentWidth / 2);
+      yOrigin ??= (parentHeight / 2) - widget.customOffset.dy / 2.5;
+      radius ??= min(parentWidth, parentHeight) / widget.radiusDividend;
 
       // Calculate the position of the child
       final angle = 2 * pi * index / widget.children.length + rotation;
@@ -263,8 +263,8 @@ class _CircularSelectorState extends State<CircularSelector>
       onTapUp: (details) {
         final dx = details.localPosition.dx;
         final dy = details.localPosition.dy;
-        final xOrigin = (deviceWidth / 2);
-        final yOrigin = (deviceHeight / 2);
+        final xOrigin = (parentWidth / 2);
+        final yOrigin = (parentHeight / 2);
 
         final index = getTappedChildIndex(dx, dy, xOrigin, yOrigin);
         widget.onSelected(index);
@@ -273,9 +273,7 @@ class _CircularSelectorState extends State<CircularSelector>
       onPanStart: _onPanStart,
       onPanUpdate: _onPanUpdate,
       onPanEnd: _onPanEnd,
-      child: Container(
-        height: deviceHeight,
-        width: deviceWidth,
+      child: DecoratedBox(
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.blue,

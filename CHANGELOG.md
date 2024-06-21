@@ -11,3 +11,8 @@
 ## 0.0.3
 
 * Fixed roadmap, changelog, and readme files.
+
+## 0.0.4
+
+* Fixed positioning of circular selector widget for android devices.
+* NOTE: It is still broken for Linux devices
