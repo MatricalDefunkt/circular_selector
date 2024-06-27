@@ -13,9 +13,15 @@
 
 # 0.0.4
 
-- Aim to add concentricity to the widget, i.e. the ability to have multiple circles in the widget.
 - Fix the positioning of the widget in the android app.
 
 # 0.0.5
 
+- Aim to add concentricity to the widget, i.e. the ability to have multiple circles in the widget.
+
+# 0.0.6
 - Aim to add more modularity and customizability and remove testing elements.
+
+# 0.1.1
+- Aim to add images / patterns as an option for background
+- Fix tapping incorrect index bug

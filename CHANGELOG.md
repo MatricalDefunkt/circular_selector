@@ -16,3 +16,9 @@
 
 * Fixed positioning of circular selector widget for android devices.
 * NOTE: It is still broken for Linux devices
+
+## 0.1.0
+
+* Added concentricity to the widget, i.e. the ability to have multiple circles in the widget.
+* Added some modularity with the test containers and circles
+* Added better offsetting to improve cross-compatibility
