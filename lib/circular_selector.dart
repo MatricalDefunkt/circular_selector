@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 class CircularSelector extends StatefulWidget {
-  const CircularSelector({
-    super.key,
-    required this.children,
-    required this.childSize,
-    required this.radiusDividend,
-    required this.onSelected,
-    required this.customOffset,
-  });
+  const CircularSelector(
+      {super.key,
+      required this.children,
+      required this.childSize,
+      required this.radiusDividend,
+      required this.onSelected,
+      required this.customOffset,
+      this.circleBackgroundColor = Colors.transparent});
 
   /// The number that the device width is divided by to
   /// get the radius of the circle.
@@ -32,13 +32,37 @@ class CircularSelector extends StatefulWidget {
   /// Returns a list of circular containers for testing purposes.
   ///
   /// The number of containers is defined by the [num] parameter.
-  static List<Container> getTestContainers(int num, double childSize) {
+  static List<Container> getTestContainers(int num, double childSize,
+      {bool rainbow = false}) {
     List<Container> containers = [];
     for (int i = 0; i < num; i++) {
+      // Calculate the segment length
+      int segmentLength = num ~/ 3;
+      int r = 0, g = 0, b = 0;
+
+      if (rainbow) {
+        if (i < segmentLength) {
+          // Red to Green
+          r = 255 - (255 * i ~/ segmentLength);
+          g = 255 * i ~/ segmentLength;
+          b = 0;
+        } else if (i < segmentLength * 2) {
+          // Green to Blue
+          int j = i - segmentLength;
+          g = 255 - (255 * j ~/ segmentLength);
+          b = 255 * j ~/ segmentLength;
+        } else {
+          // Blue to Red
+          int j = i - segmentLength * 2;
+          b = 255 - (255 * j ~/ segmentLength);
+          r = 255 * j ~/ segmentLength;
+        }
+      }
+
       containers.add(Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.green,
+          color: rainbow ? Color.fromARGB(255, r, g, b) : Colors.green,
         ),
         child: Center(
           child: Text(
@@ -53,6 +77,8 @@ class CircularSelector extends StatefulWidget {
     return containers;
   }
 
+  final Color circleBackgroundColor;
+
   @override
   // ignore: library_private_types_in_public_api
   _CircularSelectorState createState() => _CircularSelectorState();
@@ -64,15 +90,6 @@ class _CircularSelectorState extends State<CircularSelector>
   late AnimationController _controller;
   late Animation<double> _animation;
   late double startRotation;
-  late Offset parentDimensions;
-
-  static double calculateGestureAngle(
-      double dx, double dy, double xOrigin, double yOrigin) {
-    double angle = atan2(dy - yOrigin, dx - xOrigin) * 180 / pi;
-    angle = angle < 0 ? 360 + angle : angle;
-    angle = (angle + 90) % 360; // Adjusting the origin to 12 o'clock
-    return angle;
-  }
 
   @override
   void initState() {
@@ -98,6 +115,14 @@ class _CircularSelectorState extends State<CircularSelector>
     super.dispose();
   }
 
+  double calculateGestureAngle(
+      double dx, double dy, double xOrigin, double yOrigin) {
+    double angle = atan2(dy - yOrigin, dx - xOrigin) * 180 / pi;
+    angle = angle < 0 ? 360 + angle : angle;
+    angle = (angle + 90) % 360; // Adjusting the origin to 12 o'clock
+    return angle;
+  }
+
   int getTappedChildIndex(
       double dx, double dy, double xOrigin, double yOrigin) {
     final angleDeg = calculateGestureAngle(dx, dy, xOrigin, yOrigin);
@@ -108,8 +133,9 @@ class _CircularSelectorState extends State<CircularSelector>
     adjustedAngle = adjustedAngle < 0 ? 360 + adjustedAngle : adjustedAngle;
 
     // Determine the child index based on the adjusted angle
-    int index =
-        (adjustedAngle / anglePerChild).round() % widget.children.length;
+    double centerOffset = anglePerChild / 2;
+    int index = ((adjustedAngle + centerOffset) / anglePerChild).floor() %
+        widget.children.length;
     return index;
   }
 
@@ -167,39 +193,37 @@ class _CircularSelectorState extends State<CircularSelector>
     _controller.forward(from: 0);
   }
 
-  void _onPanStart(DragStartDetails details) {
-    if (_controller.isAnimating) {
-      _controller.stop();
-    }
-    final dx = details.localPosition.dx;
-    final dy = details.localPosition.dy;
+  double totalRotation = 0;
 
-    final xOrigin = parentDimensions.dx / 2;
-    final yOrigin = parentDimensions.dy / 2;
+  Function(DragStartDetails) _onPanStart(double xOrigin, double yOrigin) {
+    return (DragStartDetails details) {
+      if (_controller.isAnimating) {
+        _controller.stop();
+      }
+      final dx = details.localPosition.dx;
+      final dy = details.localPosition.dy;
 
-    startRotation = calculateGestureAngle(dx, dy, xOrigin, yOrigin);
+      startRotation = calculateGestureAngle(dx, dy, xOrigin, yOrigin);
+      totalRotation = 0;
+    };
   }
 
-  void _onPanUpdate(DragUpdateDetails details) {
-    final dx = details.localPosition.dx;
-    final dy = details.localPosition.dy;
+  Function(DragUpdateDetails) _onPanUpdate(double xOrigin, double yOrigin) {
+    return (DragUpdateDetails details) {
+      final dx = details.localPosition.dx;
+      final dy = details.localPosition.dy;
 
-    if (dx <= 1.0 && dy <= 1.0) {
-      return;
-    }
+      final angle = calculateGestureAngle(dx, dy, xOrigin, yOrigin);
 
-    final xOrigin = parentDimensions.dx / 2;
-    final yOrigin = parentDimensions.dy / 2;
+      final angleDiff = angle - startRotation;
 
-    final angle = calculateGestureAngle(dx, dy, xOrigin, yOrigin);
+      setState(() {
+        rotation += (angleDiff * pi / 180);
+        startRotation = angle;
+      });
 
-    final angleDiff = angle - startRotation;
-
-    setState(() {
-      // Update the rotation
-      rotation += (angleDiff * pi / 180);
-      startRotation = angle;
-    });
+      totalRotation += angleDiff;
+    };
   }
 
   void _onPanEnd(DragEndDetails details) {
@@ -225,27 +249,38 @@ class _CircularSelectorState extends State<CircularSelector>
   @override
   Widget build(BuildContext context) {
     final parentWidth = MediaQuery.of(context).size.width;
-    final parentHeight =
-        MediaQuery.of(context).size.height - AppBar().preferredSize.height;
-    parentDimensions = Offset(parentWidth, parentHeight);
+    final parentHeight = MediaQuery.of(context).size.height -
+        kToolbarHeight -
+        MediaQuery.of(context).padding.top;
+    final xOrigin =
+        (min(parentWidth, parentHeight) / widget.radiusDividend * 2) / 2;
+    final yOrigin =
+        (min(parentWidth, parentHeight) / widget.radiusDividend * 2) / 2;
 
-    Point getPosition(int index, double childSize, double? xOrigin,
-        double? yOrigin, double? radius) {
-      xOrigin ??= (parentWidth / 2);
-      yOrigin ??= (parentHeight / 2) - widget.customOffset.dy / 2.5;
-      radius ??= min(parentWidth, parentHeight) / widget.radiusDividend;
+    Point getPosition(
+        int index, double childSize, double xOrigin, double yOrigin) {
+      final double radius =
+          min(parentWidth, parentHeight) / widget.radiusDividend;
+
+      // xOrigin += widget.customOffset.dx;
+      // yOrigin += widget.customOffset.dy;
 
       // Calculate the position of the child
       final angle = 2 * pi * index / widget.children.length + rotation;
-      final dx = xOrigin + radius * cos(-(angle - pi / 2)) - childSize / 2;
-      final dy = yOrigin + radius * sin(-(angle - pi / 2)) - childSize / 2;
+      final dx = xOrigin + radius * cos(-(angle - pi / 2)) + childSize / 2;
+      final dy = yOrigin + radius * sin(-(angle - pi / 2)) + childSize / 2;
 
       return Point(dx, dy);
     }
 
     List<Widget> positionedChildren = [];
     for (int i = 0; i < widget.children.length; i++) {
-      final position = getPosition(i, widget.childSize, null, null, null);
+      final position = getPosition(
+        i,
+        widget.childSize,
+        xOrigin,
+        yOrigin,
+      );
       final child = widget.children[i];
       final positionedChild = Positioned(
         left: position.x.toDouble(),
@@ -259,29 +294,33 @@ class _CircularSelectorState extends State<CircularSelector>
       positionedChildren.add(positionedChild);
     }
 
-    return GestureDetector(
-      onTapUp: (details) {
-        final dx = details.localPosition.dx;
-        final dy = details.localPosition.dy;
-        final xOrigin = (parentWidth / 2);
-        final yOrigin = (parentHeight / 2);
+    return SizedBox(
+        width: min(parentWidth, parentHeight) / widget.radiusDividend * 2 +
+            widget.childSize * 2,
+        height: min(parentWidth, parentHeight) / widget.radiusDividend * 2 +
+            widget.childSize * 2,
+        child: GestureDetector(
+          onTapUp: (details) {
+            final dx = details.localPosition.dx;
+            final dy = details.localPosition.dy;
 
-        final index = getTappedChildIndex(dx, dy, xOrigin, yOrigin);
-        widget.onSelected(index);
-        animateToTop(index);
-      },
-      onPanStart: _onPanStart,
-      onPanUpdate: _onPanUpdate,
-      onPanEnd: _onPanEnd,
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.blue,
-        ),
-        child: Stack(
-          children: positionedChildren,
-        ),
-      ),
-    );
+            final index = getTappedChildIndex(dx, dy, xOrigin, yOrigin);
+            widget.onSelected(index);
+            animateToTop(index);
+          },
+          onPanStart: _onPanStart(xOrigin, yOrigin),
+          onPanUpdate: _onPanUpdate(xOrigin, yOrigin),
+          onPanEnd: _onPanEnd,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: widget.circleBackgroundColor,
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: positionedChildren,
+            ),
+          ),
+        ));
   }
 }
