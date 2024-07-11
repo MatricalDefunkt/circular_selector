@@ -25,3 +25,6 @@
 # 0.1.1
 - Aim to add images / patterns as an option for background
 - Fix tapping incorrect index bug
+
+# 0.1.2
+- Add a autditory/physical feedback for rotation

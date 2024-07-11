@@ -56,8 +56,14 @@ class MyHomePage extends StatelessWidget {
                       MediaQuery.of(context).padding.top,
                 ),
                 circleBackgroundColor: const Color.fromARGB(255, 85, 85, 85),
-                children:
-                    CircularSelector.getTestContainers(20, 30.0, rainbow: true),
+                children: [
+                  Text("SCI"),
+                  Text("SST"),
+                  Text("ENG"),
+                  Text("MRT"),
+                  Text("HIN"),
+                  Text("EVS")
+                ],
               ),
               CircularSelector(
                 onSelected: testSelected(1),
@@ -69,8 +75,18 @@ class MyHomePage extends StatelessWidget {
                       MediaQuery.of(context).padding.top,
                 ),
                 circleBackgroundColor: const Color.fromARGB(255, 170, 170, 170),
-                children:
-                    CircularSelector.getTestContainers(10, 30.0, rainbow: true),
+                children: [
+                  Text("1"),
+                  Text("2"),
+                  Text("3"),
+                  Text("4"),
+                  Text("5"),
+                  Text("6"),
+                  Text("7"),
+                  Text("8"),
+                  Text("9"),
+                  Text("10")
+                ],
               ),
               CircularSelector(
                 onSelected: testSelected(2),
@@ -81,9 +97,8 @@ class MyHomePage extends StatelessWidget {
                   AppBar().preferredSize.height -
                       MediaQuery.of(context).padding.top,
                 ),
-                circleBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                children:
-                    CircularSelector.getTestContainers(5, 30.0, rainbow: true),
+                circleBackgroundColor: const Color.fromARGB(255, 0, 0, 0),
+                children: [Text("SSC"), Text("CBSE")],
               ),
             ]),
           ),
